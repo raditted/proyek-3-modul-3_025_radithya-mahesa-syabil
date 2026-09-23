@@ -8,14 +8,24 @@ use App\Models\Activity;
 use App\Services\ActivityService;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ActivityController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $activities = Activity::query()->orderBy('activity_date')->get();
-        return view('activities.index', compact('activities'));
+        $validStatuses = ['Planned', 'Ongoing', 'Done'];
+        $status = $request->query('status');
+
+        $activities = Activity::query()
+            ->when(in_array($status, $validStatuses), function ($query) use ($status) {
+                $query->where('status', $status);
+            })
+            ->orderBy('activity_date')
+            ->get();
+
+        return view('activities.index', compact('activities', 'status'));
     }
 
     public function create(): View
@@ -23,11 +33,12 @@ class ActivityController extends Controller
         return view('activities.create');
     }
 
-    public function store(StoreActivityRequest $request, ActivityService $service): RedirectResponse 
+    public function store(StoreActivityRequest $request, ActivityService $service): RedirectResponse
     {
         $activity = $service->create($request->validated());
+
         return to_route('activities.show', $activity)
-               ->with('success', 'Kegiatan berhasil dibuat.');
+            ->with('success', 'Kegiatan berhasil dibuat.');
     }
 
     public function show(Activity $activity): View
@@ -40,25 +51,25 @@ class ActivityController extends Controller
         return view('activities.edit', compact('activity'));
     }
 
-    public function update(UpdateActivityRequest $request, Activity $activity, ActivityService $service): RedirectResponse 
+    public function update(UpdateActivityRequest $request, Activity $activity, ActivityService $service): RedirectResponse
     {
         try {
             $service->update($activity, $request->validated());
         } catch (DomainException $exception) {
             return back()
-                   ->withErrors(['status' => $exception->getMessage()])
-                   ->withInput();
+                ->withErrors(['status' => $exception->getMessage()])
+                ->withInput();
         }
 
         return to_route('activities.show', $activity)
-               ->with('success', 'Kegiatan berhasil diperbarui.');
+            ->with('success', 'Kegiatan berhasil diperbarui.');
     }
 
     public function destroy(Activity $activity): RedirectResponse
     {
         $activity->delete();
+
         return to_route('activities.index')
-               ->with('success', 'Kegiatan berhasil dihapus.');
+            ->with('success', 'Kegiatan berhasil dihapus.');
     }
 }
-logger('test');
