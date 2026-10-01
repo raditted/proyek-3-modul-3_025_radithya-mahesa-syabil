@@ -19,12 +19,3 @@ trait HasActivityRules
         ];
     }
 }
-
-$validator = Illuminate\Support\Facades\Validator::make([
-    'category_id' => 1,
-    'code' => 'ACT-001',
-    'title' => 'TES',
-    'start_at' => '2026-10-10 10:00',
-    'end_at' => '2026-10-09 10:00',
-    'capacity' => 50,
-], (new App\Http\Requests\StoreActivityRequest())->rules());
