@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\Activity;
+use App\Models\Registration;
 use DomainException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ActivityService
@@ -48,6 +50,16 @@ class ActivityService
         $activity->update(['status' => 'published']);
 
         return $activity;
+    }
+
+    public function registerParticipant(Activity $activity, array $data): Registration
+    {
+        return DB::transaction(function () use ($activity, $data) {
+            $registration = $activity->registrations()->create($data);
+            $activity->increment('registered_count');
+
+            return $registration;
+        });
     }
 
     private function ensureValidTransition(string $current, string $next): void
