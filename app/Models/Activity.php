@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Activity extends Model
@@ -32,5 +33,28 @@ class Activity extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function scopeFilter(Builder $query, array $filters): Builder
+    {
+        return $query
+            ->when($filters['search'] ?? null, function ($q, $search) {
+                $q->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")->orWhere('code', 'like', "%{$search}%");
+                });
+            })
+            ->when($filters['category_id'] ?? null, function ($q, $categoryId) {
+                $q->where('category_id', $categoryId);
+            })
+            ->when($filters['status'] ?? null, function ($q, $status) {
+                $q->where('status', $status);
+            })
+            ->when($filters['sort'] ?? 'latest', function ($q, $sort) {
+                if ($sort === 'oldest') {
+                    $q->orderBy('start_at', 'asc');
+                } else {
+                    $q->orderBy('start_at', 'desc');
+                }
+            });
     }
 }

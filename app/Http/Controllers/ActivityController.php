@@ -15,17 +15,12 @@ class ActivityController extends Controller
 {
     public function index(Request $request): View
     {
-        $validStatuses = ['Planned', 'Ongoing', 'Done'];
-        $status = $request->query('status');
-
         $activities = Activity::query()
-            ->when(in_array($status, $validStatuses), function ($query) use ($status) {
-                $query->where('status', $status);
-            })
-            ->orderBy('activity_date')
-            ->get();
+            ->filter($request->only(['search', 'category_id', 'status', 'sort']))
+            ->paginate(10)
+            ->withQueryString();
 
-        return view('activities.index', compact('activities', 'status'));
+        return view('activities.index', compact('activities'));
     }
 
     public function create(): View
