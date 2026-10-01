@@ -60,6 +60,15 @@ class ActivityController extends Controller
             ->with('success', 'Kegiatan berhasil diperbarui.');
     }
 
+    public function restore(int $id): RedirectResponse
+    {
+        $activity = Activity::onlyTrashed()->findOrFail($id);
+        $activity->restore();
+
+        return to_route('activities.index')
+            ->with('success', 'Kegiatan berhasil dipulihkan.');
+    }
+
     public function destroy(Activity $activity): RedirectResponse
     {
         $activity->delete();
