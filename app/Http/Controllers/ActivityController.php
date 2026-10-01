@@ -16,6 +16,7 @@ class ActivityController extends Controller
     public function index(Request $request): View
     {
         $activities = Activity::query()
+            ->with('category')
             ->filter($request->only(['search', 'category_id', 'status', 'sort']))
             ->paginate(10)
             ->withQueryString();
