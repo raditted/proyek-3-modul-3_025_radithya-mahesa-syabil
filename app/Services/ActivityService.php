@@ -54,6 +54,24 @@ class ActivityService
 
     public function registerParticipant(Activity $activity, array $data): Registration
     {
+        if ($activity->status !== 'published') {
+            throw ValidationException::withMessages([
+                'activity' => 'Pendaftaran hanya terbuka untuk kegiatan berstatus published.',
+            ]);
+        }
+
+        if ($activity->start_at && $activity->start_at->isPast()) {
+            throw ValidationException::withMessages([
+                'activity' => 'Pendaftaran ditolak karena kegiatan sudah dimulai atau lewat.',
+            ]);
+        }
+
+        if ($activity->registered_count >= $activity->capacity) {
+            throw ValidationException::withMessages([
+                'capacity' => 'Pendaftaran ditolak karena kapasitas peserta sudah penuh.',
+            ]);
+        }
+
         return DB::transaction(function () use ($activity, $data) {
             $registration = $activity->registrations()->create($data);
             $activity->increment('registered_count');
