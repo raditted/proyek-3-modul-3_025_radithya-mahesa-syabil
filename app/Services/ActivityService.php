@@ -6,6 +6,7 @@ use App\Models\Activity;
 use App\Models\Registration;
 use DomainException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class ActivityService
@@ -21,6 +22,11 @@ class ActivityService
 
     public function create(array $data): Activity
     {
+        if (isset($data['poster'])) {
+            $data['poster_path'] = $data['poster']->store('posters', 'public');
+            unset($data['poster']);
+        }
+
         return Activity::create($data);
     }
 
@@ -28,6 +34,13 @@ class ActivityService
     {
         $nextStatus = $data['status'] ?? $activity->status;
         $this->ensureValidTransition($activity->status, $nextStatus);
+        if (isset($data['poster'])) {
+            if ($activity->poster_path) {
+                Storage::disk('public')->delete($activity->poster_path);
+            }
+            $data['poster_path'] = $data['poster']->store('posters', 'public');
+            unset($data['poster']);
+        }
         $activity->update($data);
 
         return $activity->refresh();

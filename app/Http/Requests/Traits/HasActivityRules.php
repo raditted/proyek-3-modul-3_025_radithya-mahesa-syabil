@@ -16,6 +16,7 @@ trait HasActivityRules
             'start_at' => ['required', 'date'],
             'end_at' => ['required', 'date', 'after_or_equal:start_at'],
             'capacity' => ['required', 'integer', 'min:1', 'max:500'],
+            'poster' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 }

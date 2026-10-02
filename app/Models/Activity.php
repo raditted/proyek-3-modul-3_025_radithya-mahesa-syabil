@@ -19,6 +19,7 @@ class Activity extends Model
         'end_at',
         'location',
         'capacity',
+        'poster_path',
         'category',
         'status',
     ];
